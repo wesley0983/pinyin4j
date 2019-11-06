@@ -7,6 +7,12 @@ import net.sourceforge.pinyin4j.format.HanyuPinyinToneType;
 import net.sourceforge.pinyin4j.format.exception.BadHanyuPinyinOutputFormatCombination;
 
 public class PinyinUtil {
+
+    private static final String DEFAULT_GROUP_NAME = "#";
+    // pinyin4j格式类
+    private static HanyuPinyinOutputFormat format = null;
+    // 拼音字符串数组
+    private static String[] pinyin;
     /**
      * 将字符串转换成拼音数组
      *
@@ -22,7 +28,7 @@ public class PinyinUtil {
      * @param src
      * @return
      */
-    public static String[] stringToPinyin(String src,String separator) {
+    public static String[] stringToPinyin(String src, String separator) {
         return stringToPinyin(src, true, separator);
     }
 
@@ -112,7 +118,7 @@ public class PinyinUtil {
      * @return
      */
     @SuppressWarnings("deprecation")
-    public static String hanziToPinyin(String hanzi,String separator){
+    public static String hanziToPinyin(String hanzi, String separator){
         // 创建汉语拼音处理类
         HanyuPinyinOutputFormat defaultFormat = new HanyuPinyinOutputFormat();
         // 输出设置，大小写，音标方式
@@ -190,7 +196,7 @@ public class PinyinUtil {
             return new char[]{src};
         }
         //获取所有的拼音
-        String []pinyingStr=PinyinHelper.toHanyuPinyinStringArray(src);
+        String[]pinyingStr=PinyinHelper.toHanyuPinyinStringArray(src);
 
         //创建返回对象
         int polyphoneSize=pinyingStr.length;
@@ -201,7 +207,7 @@ public class PinyinUtil {
             char headChar=s.charAt(0);
             //首字母是否大写，默认是小写
             if(isCapital){
-                headChars[i]=Character.toUpperCase(headChar);
+                headChars[i]= Character.toUpperCase(headChar);
             }else{
                 headChars[i]=headChar;
             }
@@ -232,7 +238,7 @@ public class PinyinUtil {
      * @param isCapital 是否大写
      * @return
      */
-    public  static String[] getHeadByString(String src,boolean isCapital){
+    public  static String[] getHeadByString(String src, boolean isCapital){
         return getHeadByString( src, isCapital,null);
     }
     /**
@@ -242,7 +248,7 @@ public class PinyinUtil {
      * @param separator 分隔符
      * @return
      */
-    public  static String[] getHeadByString(String src,boolean isCapital,String separator){
+    public  static String[] getHeadByString(String src, boolean isCapital, String separator){
         char[]chars=src.toCharArray();
         String[] headString=new String[chars.length];
         int i=0;
@@ -267,6 +273,97 @@ public class PinyinUtil {
             i++;
         }
         return headString;
+    }
+
+    /**
+     * 获取字符串对应的拼音字符串，分两个步骤
+     * 一、先对每个字符进行处理，规则：
+     * 1、中文字符，返回对应的大写的拼音
+     * 2、字母，转换成大写字母
+     * 3、其他，不作处理
+     * 二、判断字符串的首个字符是否是字母或汉字，如果是，不做处理，否则在第一步转换后的结果前面添加
+     * 一个Unicode值比字母大的任意一个字符（保证compare排序的时候位置在字母后面）
+     *
+     * @param str
+     * @return
+     */
+    public static String getPinyin(String str) {
+        StringBuilder resultSb = new StringBuilder();
+        for (char item : str.trim().toCharArray()) {
+            String itemStr = Character.toString(item);
+            if (isLetter(itemStr)) {
+                resultSb.append(Character.toString(item).toUpperCase());
+            } else {
+                resultSb.append(Character.toString(item));
+            }
+        }
+
+        if (DEFAULT_GROUP_NAME.equals(getLetter(str))) {
+            resultSb.insert(0, "~");
+        }
+        return resultSb.toString();
+    }
+
+    /**
+     * 判断是否是中文
+     *
+     * @param str
+     * @return
+     */
+    private static boolean isChinese(String str) {
+        String regex = "^[\u4e00-\u9fa5]+$";
+        return str.matches(regex);
+    }
+
+    /**
+     * 判断是否是字母
+     *
+     * @param str
+     * @return
+     */
+    private static boolean isLetter(String str) {
+        String regex = "^[a-zA-Z]+$";
+        return str.matches(regex);
+    }
+
+    /**
+     * 获取字符串对应的groupName
+     * 规则：
+     * 1、字母直接转换成大写字母
+     * 2、中文转换成拼音并返回拼音首个字符对应的大写字母
+     * 3、其他返回#
+     *
+     * @param name
+     * @return
+     */
+    private static String getLetter(String name) {
+        String result = DEFAULT_GROUP_NAME;
+        String firstNameLetter = String.valueOf(name.charAt(0));
+        if (isLetter(firstNameLetter)) {
+            result = firstNameLetter.toUpperCase();
+        } else if (isChinese(firstNameLetter)) {
+            result = String.valueOf(getCharPinYin(firstNameLetter.charAt(0)).charAt(0))
+                    .toUpperCase();
+        }
+
+        return result;
+    }
+
+    private static String getCharPinYin(char pinYinStr) {
+
+        try {
+            // 执行转换
+            pinyin = PinyinHelper.toHanyuPinyinStringArray(pinYinStr, format);
+        } catch (BadHanyuPinyinOutputFormatCombination e) {
+            e.printStackTrace();
+        }
+        // pinyin4j规则，当转换的符串不是汉字，就返回null
+        if (pinyin == null) {
+            return null;
+        }
+
+        // 多音字会返回一个多音字拼音的数组，pinyiin4j并不能有效判断该字的读音
+        return pinyin[0];
     }
 
     public static void main(String[] args) {

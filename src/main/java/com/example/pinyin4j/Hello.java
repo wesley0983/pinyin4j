@@ -62,10 +62,21 @@ class ToSort implements Comparator<User> {
     }
 //(int)c <= 96 || 123 <= (int)c || (int)c<= 126
     public static void main(String[] args) {
-        int c = 125;
-        if((int)c <= 96 || c >= 123 && c < 127 ){
-            System.out.println("失敗");
+        Map<Integer, List<User>> map = new HashMap<>();
+        List<Integer> list3 = new ArrayList<Integer>();//key
+        List<User> list4 = new ArrayList<User>();//value
+        for (final Map.Entry<Integer, List<User>> entry : map.entrySet()) {
+            final Integer key = entry.getKey();
+            final List<User> value = entry.getValue();
+            for (final User val : value) {
+                list3.add(key);
+                list4.add(val);
+            }
         }
+
+        Collections.sort(list4,new ToSort());
+
+        /***/
     }
 
 }

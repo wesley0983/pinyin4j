@@ -1,15 +1,17 @@
 package com.example.pinyin4j;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 public class Hello {
     public static void main(String[] args) {
         List<User> list=new ArrayList<User>();
         User u=new User();
-        u.setName("张三");
+        u.setName("H");
+        u.setAge(21);
+        list.add(u);
+
+        u=new User();
+        u.setName("電競牛");
         u.setAge(21);
         list.add(u);
 
@@ -34,12 +36,14 @@ public class Hello {
         list.add(u);
 
         for(User user: list) {
-            System.out.println(user.getName());
+//            System.out.println(user.getName());
+            System.out.println(PinyinUtil.hanziToPinyin(user.getName()));
         }
         Collections.sort(list, new ToSort());//new ToSort() 根据需求定义排序
         System.out.println("排序后！！！！！！！！！");
         for(User user: list) {
-            System.out.println((user.getName()));
+//            System.out.println((user.getName()));
+            System.out.println(PinyinUtil.hanziToPinyin(user.getName()));
         }
     }
 }
@@ -56,4 +60,12 @@ class ToSort implements Comparator<User> {
             return -1;
         }
     }
+//(int)c <= 96 || 123 <= (int)c || (int)c<= 126
+    public static void main(String[] args) {
+        int c = 125;
+        if((int)c <= 96 || c >= 123 && c < 127 ){
+            System.out.println("失敗");
+        }
+    }
+
 }

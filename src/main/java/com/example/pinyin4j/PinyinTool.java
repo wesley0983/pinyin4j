@@ -50,7 +50,7 @@ public class PinyinTool {
         String py = "";
         String temp = "";
         String[] t;
-        for(int i=0;i<str.length();i++){
+        for(int i=0;i<1;i++){
             char c = str.charAt(i);
             if((int)c <= 96 || (int)c >= 123 && (int)c < 127 )
                 py += c;
